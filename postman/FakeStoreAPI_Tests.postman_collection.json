@@ -1,0 +1,225 @@
+{
+  "info": {
+    "name": "FakeStore API - QA Test Suite",
+    "description": "API test collection for the e-commerce project. Covers products, cart, and user auth endpoints of https://fakestoreapi.com, with assertions on status codes, response schema, and response time. Companion to the Selenium UI suite in this repo.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "GET all products - TC-API-001",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "https://fakestoreapi.com/products", "protocol": "https", "host": ["fakestoreapi", "com"], "path": ["products"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response is an array', function () { pm.expect(pm.response.json()).to.be.an('array'); });",
+                  "pm.test('Each product has required fields', function () {",
+                  "    const products = pm.response.json();",
+                  "    products.forEach((p) => {",
+                  "        pm.expect(p).to.have.property('id');",
+                  "        pm.expect(p).to.have.property('title');",
+                  "        pm.expect(p).to.have.property('price');",
+                  "        pm.expect(p).to.have.property('category');",
+                  "    });",
+                  "});",
+                  "pm.test('Response time is under 1000ms', function () { pm.expect(pm.response.responseTime).to.be.below(1000); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET single product by ID - TC-API-002",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "https://fakestoreapi.com/products/1", "protocol": "https", "host": ["fakestoreapi", "com"], "path": ["products", "1"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Returned product ID matches requested ID', function () {",
+                  "    pm.expect(pm.response.json().id).to.eql(1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET product with invalid ID - TC-API-003 (negative)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "https://fakestoreapi.com/products/999999", "protocol": "https", "host": ["fakestoreapi", "com"], "path": ["products", "999999"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Non-existent product does not return a valid product body', function () {",
+                  "    pm.expect(pm.response.text()).to.satisfy((body) => body === '' || body === 'null' || pm.response.code >= 400);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST create product - TC-API-004",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"QA Test Product\",\n  \"price\": 19.99,\n  \"description\": \"Product created via automated API test\",\n  \"image\": \"https://i.pravatar.cc\",\n  \"category\": \"electronics\"\n}"
+            },
+            "url": { "raw": "https://fakestoreapi.com/products", "protocol": "https", "host": ["fakestoreapi", "com"], "path": ["products"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Created product echoes submitted title', function () {",
+                  "    pm.expect(pm.response.json().title).to.eql('QA Test Product');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "POST login - valid credentials - TC-API-005",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"mor_2314\",\n  \"password\": \"83r5^_\"\n}"
+            },
+            "url": { "raw": "https://fakestoreapi.com/auth/login", "protocol": "https", "host": ["fakestoreapi", "com"], "path": ["auth", "login"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response contains a token', function () { pm.expect(pm.response.json()).to.have.property('token'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST login - invalid credentials - TC-API-006 (negative)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"invalid_user\",\n  \"password\": \"wrong_password\"\n}"
+            },
+            "url": { "raw": "https://fakestoreapi.com/auth/login", "protocol": "https", "host": ["fakestoreapi", "com"], "path": ["auth", "login"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Invalid login returns 401 or an error body', function () {",
+                  "    pm.expect(pm.response.code === 401 || pm.response.text().toLowerCase().includes('error')).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "GET all carts - TC-API-007",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "https://fakestoreapi.com/carts", "protocol": "https", "host": ["fakestoreapi", "com"], "path": ["carts"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Each cart has a userId and products array', function () {",
+                  "    const carts = pm.response.json();",
+                  "    carts.forEach((c) => {",
+                  "        pm.expect(c).to.have.property('userId');",
+                  "        pm.expect(c).to.have.property('products');",
+                  "        pm.expect(c.products).to.be.an('array');",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST add cart - TC-API-008",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 5,\n  \"date\": \"2026-09-17\",\n  \"products\": [{ \"productId\": 1, \"quantity\": 2 }]\n}"
+            },
+            "url": { "raw": "https://fakestoreapi.com/carts", "protocol": "https", "host": ["fakestoreapi", "com"], "path": ["carts"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Created cart echoes submitted userId', function () {",
+                  "    pm.expect(pm.response.json().userId).to.eql(5);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
