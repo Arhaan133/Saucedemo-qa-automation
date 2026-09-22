@@ -2,8 +2,10 @@ package com.qaproject.pages;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.util.List;
+import java.time.Duration;
 
 /**
  * Page Object for the shopping cart screen.
@@ -12,6 +14,7 @@ import java.util.List;
 public class CartPage {
 
     private final WebDriver driver;
+    private final WebDriverWait wait;
 
     private final By cartItems = By.className("cart_item");
     private final By checkoutButton = By.id("checkout");
@@ -19,6 +22,7 @@ public class CartPage {
 
     public CartPage(WebDriver driver) {
         this.driver = driver;
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
     public int getItemCount() {
@@ -26,7 +30,7 @@ public class CartPage {
     }
 
     public void clickCheckout() {
-        driver.findElement(checkoutButton).click();
+        wait.until(ExpectedConditions.elementToBeClickable(checkoutButton)).click();
     }
 
     public void continueShopping() {

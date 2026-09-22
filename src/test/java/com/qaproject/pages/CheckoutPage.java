@@ -2,6 +2,11 @@ package com.qaproject.pages;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.time.Duration;
 
 /**
  * Page Object covering the two-step SauceDemo checkout flow
@@ -11,6 +16,7 @@ import org.openqa.selenium.WebDriver;
 public class CheckoutPage {
 
     private final WebDriver driver;
+    private final WebDriverWait wait;
 
     private final By firstNameField = By.id("first-name");
     private final By lastNameField = By.id("last-name");
@@ -25,29 +31,44 @@ public class CheckoutPage {
 
     public CheckoutPage(WebDriver driver) {
         this.driver = driver;
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
     public void fillCustomerInfo(String firstName, String lastName, String postalCode) {
-        driver.findElement(firstNameField).sendKeys(firstName);
-        driver.findElement(lastNameField).sendKeys(lastName);
-        driver.findElement(postalCodeField).sendKeys(postalCode);
-        driver.findElement(continueButton).click();
+        WebElement firstNameEl = wait.until(ExpectedConditions.visibilityOfElementLocated(firstNameField));
+        firstNameEl.clear();
+        firstNameEl.sendKeys(firstName);
+
+        WebElement lastNameEl = driver.findElement(lastNameField);
+        lastNameEl.clear();
+        lastNameEl.sendKeys(lastName);
+
+        WebElement postalCodeEl = driver.findElement(postalCodeField);
+        postalCodeEl.clear();
+        postalCodeEl.sendKeys(postalCode);
+
+        wait.until(ExpectedConditions.elementToBeClickable(continueButton)).click();
     }
 
     public boolean isErrorDisplayed() {
-        return !driver.findElements(errorMessage).isEmpty();
+        try {
+            return wait.until(ExpectedConditions.visibilityOfElementLocated(errorMessage)).isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public void finishOrder() {
-        driver.findElement(finishButton).click();
+        wait.until(ExpectedConditions.elementToBeClickable(finishButton)).click();
     }
 
     public boolean isOrderComplete() {
-        return driver.findElement(completeHeader).getText().toLowerCase().contains("thank you");
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(completeHeader))
+                .getText().toLowerCase().contains("thank you");
     }
 
     public String getSubtotalText() {
-        return driver.findElement(summarySubtotal).getText();
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(summarySubtotal)).getText();
     }
 
     public String getTaxText() {
