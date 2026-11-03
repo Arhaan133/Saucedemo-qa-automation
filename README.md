@@ -1,3 +1,4 @@
+[![QA Automation Suite](https://github.com/Arhaan133/Saucedemo-qa-automation/actions/workflows/ci.yml/badge.svg)](https://github.com/Arhaan133/Saucedemo-qa-automation/actions)
 # SauceDemo QA Automation Framework
 
 An end-to-end QA project covering the full testing lifecycle for a sample
